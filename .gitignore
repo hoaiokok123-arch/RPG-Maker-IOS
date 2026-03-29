@@ -1,10 +1,15 @@
 .DS_Store
 DerivedData/
-Pods/
 build/
 .build/
-*.xcworkspace
 *.xcuserstate
 *.xcuserdata/
 .tmp/
 
+# Track generated Xcode/CocoaPods artifacts for reproducible CI.
+!RPGPlayerClone.xcworkspace/
+!RPGPlayerClone.xcworkspace/**
+!Podfile.lock
+!Gemfile.lock
+!Pods/
+!Pods/**

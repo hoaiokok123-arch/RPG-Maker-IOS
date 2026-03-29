@@ -48,8 +48,10 @@ jobs:
 
       - name: Build iPhoneOS app
         run: |
-          set -o pipefail
           mkdir -p build
+          LOG_PATH="build/xcodebuild-iphoneos.log"
+          set -o pipefail
+
           xcodebuild \
             -workspace RPGPlayerClone.xcworkspace \
             -scheme RPGPlayerClone \
@@ -61,7 +63,15 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             ENABLE_PREVIEWS=NO \
             ONLY_ACTIVE_ARCH=NO \
-            build | bundle exec xcpretty
+            build 2>&1 | tee "${LOG_PATH}" | bundle exec xcpretty
+
+          BUILD_STATUS=${PIPESTATUS[0]}
+          if [[ "${BUILD_STATUS}" -ne 0 ]]; then
+            echo "::group::Raw xcodebuild tail"
+            tail -n 250 "${LOG_PATH}" || true
+            echo "::endgroup::"
+            exit "${BUILD_STATUS}"
+          fi
 
       - name: Package TrollStore IPA
         run: |
@@ -178,5 +188,6 @@ jobs:
           path: |
             build/DeviceDerivedData/Logs
             build/DeviceDerivedData/Build/Intermediates.noindex/XCBuildData
+            build/xcodebuild-iphoneos.log
             build/Artifacts
           if-no-files-found: warn

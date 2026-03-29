@@ -20,7 +20,7 @@ settings:
     INFOPLIST_FILE: RPGPlayerClone/Info.plist
     CODE_SIGN_ENTITLEMENTS: RPGPlayerClone/RPGPlayerClone.entitlements
     SWIFT_OBJC_BRIDGING_HEADER: RPGPlayerClone-Bridging-Header.h
-    ENABLE_PREVIEWS: YES
+    ENABLE_PREVIEWS: NO
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
 targets:
