@@ -57,11 +57,42 @@ jobs:
             ONLY_ACTIVE_ARCH=NO \
             build | bundle exec xcpretty
 
+      - name: Prepare simulator app artifact
+        run: |
+          set -euo pipefail
+          APP_PATH="build/DerivedData/Build/Products/Debug-iphonesimulator/RPGPlayerClone.app"
+          ARTIFACT_DIR="build/Artifacts"
+          ARTIFACT_ZIP="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app.zip"
+          SIZE_REPORT="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app-size.txt"
+
+          if [[ ! -d "${APP_PATH}" ]]; then
+            echo "Expected app bundle not found at ${APP_PATH}" >&2
+            echo "Available build products:" >&2
+            find build/DerivedData/Build/Products -maxdepth 3 -print >&2 || true
+            exit 1
+          fi
+
+          mkdir -p "${ARTIFACT_DIR}"
+
+          {
+            echo "App bundle path: ${APP_PATH}"
+            echo
+            du -sh "${APP_PATH}"
+            echo
+            echo "Top-level bundle contents:"
+            find "${APP_PATH}" -maxdepth 2 -mindepth 1 | sort
+          } | tee "${SIZE_REPORT}"
+
+          ditto -c -k --keepParent "${APP_PATH}" "${ARTIFACT_ZIP}"
+          ls -lh "${ARTIFACT_ZIP}" | tee -a "${SIZE_REPORT}"
+
       - name: Upload simulator app artifact
         uses: actions/upload-artifact@v7
         with:
           name: RPGPlayerClone-simulator-app
-          path: build/DerivedData/Build/Products/Debug-iphonesimulator/RPGPlayerClone.app
+          path: |
+            build/Artifacts/RPGPlayerClone-simulator-app.zip
+            build/Artifacts/RPGPlayerClone-simulator-app-size.txt
           if-no-files-found: error
 
       - name: Upload build logs
