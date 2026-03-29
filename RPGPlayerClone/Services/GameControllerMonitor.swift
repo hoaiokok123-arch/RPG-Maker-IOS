@@ -116,7 +116,6 @@ final class GameControllerMonitor: NSObject {
 
     private func snapshot(for gamepad: GCExtendedGamepad) -> Set<VirtualGamepadButton> {
         var pressedButtons = Set<VirtualGamepadButton>()
-        let threshold = analogThreshold
 
         if gamepad.buttonA.isPressed {
             pressedButtons.insert(.a)

@@ -89,9 +89,11 @@ final class FileImporter: @unchecked Sendable {
         let success = SSZipArchive.unzipFile(
             atPath: archiveURL.path,
             toDestination: destinationRoot.path,
+            preserveAttributes: true,
             overwrite: true,
             password: nil,
-            error: &unzipError
+            error: &unzipError,
+            delegate: nil
         )
 
         guard success else {
@@ -106,11 +108,7 @@ final class FileImporter: @unchecked Sendable {
         #if canImport(UnrarKit)
         do {
             let archive = try URKArchive(path: archiveURL.path)
-            let success = try archive.extractFiles(to: destinationRoot.path, overwrite: true)
-
-            guard success else {
-                throw FileImporterError.extractionFailed("RAR extraction reported failure.")
-            }
+            try archive.extractFiles(to: destinationRoot.path, overwrite: true)
         } catch {
             throw FileImporterError.extractionFailed(error.localizedDescription)
         }
