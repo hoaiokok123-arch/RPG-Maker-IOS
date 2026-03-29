@@ -1,0 +1,22 @@
+PODS:
+  - SSZipArchive (2.6.0)
+  - UnrarKit (2.10):
+    - UnrarKit/unrar-lib (= 2.10)
+  - UnrarKit/unrar-lib (2.10)
+
+DEPENDENCIES:
+  - SSZipArchive (~> 2.6)
+  - UnrarKit (~> 2.10)
+
+SPEC REPOS:
+  trunk:
+    - SSZipArchive
+    - UnrarKit
+
+SPEC CHECKSUMS:
+  SSZipArchive: 8a6ee5677c8e304bebc109e39cf0da91ccef22ea
+  UnrarKit: 62f535c7a34ec52d2514b9b148f33dcfa9a9dc39
+
+PODFILE CHECKSUM: 0ea4f4599e606447e9a747e68bf2a8c3e1de4745
+
+COCOAPODS: 1.16.2
