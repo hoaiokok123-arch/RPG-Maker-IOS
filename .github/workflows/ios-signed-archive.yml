@@ -1,45 +1,23 @@
-name: Export Signed IPA (Manual Only)
+name: Build IPA
 
 on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
   workflow_dispatch:
-    inputs:
-      export_method:
-        description: "Xcode export method"
-        required: true
-        default: "ad-hoc"
-        type: choice
-        options:
-          - development
-          - ad-hoc
-          - app-store
 
 permissions:
   contents: read
 
 jobs:
-  archive-device:
-    name: Archive Signed iOS App
+  build-ipa:
+    name: Build Unsigned IPA
     runs-on: macos-latest
-    timeout-minutes: 60
-    env:
-      BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-      BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
-      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
-      APP_BUNDLE_IDENTIFIER: ${{ secrets.APP_BUNDLE_IDENTIFIER }}
-      PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.PROVISIONING_PROFILE_SPECIFIER }}
+    timeout-minutes: 45
 
     steps:
-      - name: Validate required secrets
-        run: |
-          for key in BUILD_CERTIFICATE_BASE64 P12_PASSWORD BUILD_PROVISION_PROFILE_BASE64 KEYCHAIN_PASSWORD DEVELOPMENT_TEAM APP_BUNDLE_IDENTIFIER; do
-            if [[ -z "${!key:-}" ]]; then
-              echo "Missing secret: ${key}" >&2
-              exit 1
-            fi
-          done
-
       - name: Checkout repository
         uses: actions/checkout@v6
 
@@ -58,113 +36,75 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
-      - name: Install signing certificate and provisioning profile
-        run: |
-          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
-          PP_PATH="$RUNNER_TEMP/build_pp.mobileprovision"
-          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
-
-          CERTIFICATE_PATH="$CERTIFICATE_PATH" \
-          PP_PATH="$PP_PATH" \
-          python3 - <<'PY'
-          import base64
-          import os
-          from pathlib import Path
-
-          Path(os.environ["CERTIFICATE_PATH"]).write_bytes(
-              base64.b64decode(os.environ["BUILD_CERTIFICATE_BASE64"])
-          )
-          Path(os.environ["PP_PATH"]).write_bytes(
-              base64.b64decode(os.environ["BUILD_PROVISION_PROFILE_BASE64"])
-          )
-          PY
-
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
-
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles"
-
       - name: Generate Xcode project
         run: xcodegen generate
 
       - name: Install CocoaPods dependencies
         run: bundle exec pod install
 
-      - name: Archive for iOS device
-        run: |
-          mkdir -p build
-          EXTRA_ARGS=()
+      - name: Show available schemes
+        run: xcodebuild -list -workspace RPGPlayerClone.xcworkspace
 
-          if [[ -n "${PROVISIONING_PROFILE_SPECIFIER:-}" ]]; then
-            EXTRA_ARGS+=(PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE_SPECIFIER")
-          fi
+      - name: Build iPhoneOS app
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          LOG_PATH="build/xcodebuild.log"
 
           xcodebuild \
             -workspace RPGPlayerClone.xcworkspace \
             -scheme RPGPlayerClone \
             -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath build/RPGPlayerClone.xcarchive \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
             -derivedDataPath build/DerivedData \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            PRODUCT_BUNDLE_IDENTIFIER="$APP_BUNDLE_IDENTIFIER" \
-            "${EXTRA_ARGS[@]}" \
-            archive | bundle exec xcpretty
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            ENABLE_PREVIEWS=NO \
+            ENABLE_DEBUG_DYLIB=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build | tee "${LOG_PATH}" | bundle exec xcpretty
 
-      - name: Create export options plist
+      - name: Package IPA
         run: |
-          cat > build/ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>${{ inputs.export_method }}</string>
-            <key>signingStyle</key>
-            <string>automatic</string>
-            <key>teamID</key>
-            <string>${DEVELOPMENT_TEAM}</string>
-            <key>stripSwiftSymbols</key>
-            <true/>
-            <key>compileBitcode</key>
-            <false/>
-          </dict>
-          </plist>
-          EOF
+          set -euo pipefail
 
-      - name: Export IPA
-        run: |
-          xcodebuild \
-            -exportArchive \
-            -archivePath build/RPGPlayerClone.xcarchive \
-            -exportOptionsPlist build/ExportOptions.plist \
-            -exportPath build/export | bundle exec xcpretty
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/RPGPlayerClone.app"
+          ARTIFACT_DIR="build/Artifacts"
+          PAYLOAD_DIR="${ARTIFACT_DIR}/Payload"
+          IPA_PATH="${ARTIFACT_DIR}/RPGPlayerClone-unsigned.ipa"
+
+          if [[ ! -d "${APP_PATH}" ]]; then
+            echo "App bundle not found at ${APP_PATH}" >&2
+            find build/DerivedData/Build/Products -maxdepth 3 -print >&2 || true
+            exit 1
+          fi
+
+          rm -rf "${ARTIFACT_DIR}"
+          mkdir -p "${PAYLOAD_DIR}"
+          ditto "${APP_PATH}" "${PAYLOAD_DIR}/RPGPlayerClone.app"
+
+          (
+            cd "${ARTIFACT_DIR}"
+            ditto -c -k --sequesterRsrc --keepParent Payload "RPGPlayerClone-unsigned.ipa"
+          )
+
+          ls -lh "${IPA_PATH}"
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
-          name: RPGPlayerClone-ipa
-          path: build/export
+          name: RPGPlayerClone-unsigned-ipa
+          path: build/Artifacts/RPGPlayerClone-unsigned.ipa
           if-no-files-found: error
+          compression-level: 0
 
-      - name: Upload archive logs
+      - name: Upload build logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
-          name: RPGPlayerClone-archive-logs
+          name: RPGPlayerClone-build-logs
           path: |
+            build/xcodebuild.log
             build/DerivedData/Logs
-            build/RPGPlayerClone.xcarchive
           if-no-files-found: warn
-
-      - name: Clean up signing assets
-        if: always()
-        run: |
-          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
-          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
-          security delete-keychain "$KEYCHAIN_PATH" || true
-          rm -f "$PP_DIR"/build_pp.mobileprovision || true
