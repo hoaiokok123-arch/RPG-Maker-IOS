@@ -1,4 +1,4 @@
-name: iOS Signed Archive
+name: Export Signed IPA (Manual Only)
 
 on:
   workflow_dispatch:

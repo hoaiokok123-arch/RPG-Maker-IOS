@@ -1,4 +1,4 @@
-name: iOS CI
+name: Build App Artifacts
 
 on:
   push:
@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  build-simulator:
-    name: Build iOS Simulator App
+  build-artifacts:
+    name: Build Simulator App and Unsigned IPA
     runs-on: macos-latest
     timeout-minutes: 45
 
@@ -63,7 +63,7 @@ jobs:
           APP_PATH="build/DerivedData/Build/Products/Debug-iphonesimulator/RPGPlayerClone.app"
           ARTIFACT_DIR="build/Artifacts"
           STAGED_APP="${ARTIFACT_DIR}/RPGPlayerClone.app"
-          ARTIFACT_ZIP="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app.zip"
+          ARTIFACT_TGZ="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app.tar.gz"
           SIZE_REPORT="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app-size.txt"
 
           if [[ ! -d "${APP_PATH}" ]]; then
@@ -74,19 +74,30 @@ jobs:
           fi
 
           mkdir -p "${ARTIFACT_DIR}"
-          rm -rf "${STAGED_APP}" "${ARTIFACT_ZIP}"
-
-          if [[ -L "${APP_PATH}" ]]; then
-            echo "App bundle is a symlink: $(readlink "${APP_PATH}")" | tee "${SIZE_REPORT}"
-          else
-            : > "${SIZE_REPORT}"
-          fi
+          rm -rf "${STAGED_APP}" "${ARTIFACT_TGZ}"
 
           rsync -aL "${APP_PATH}/" "${STAGED_APP}/"
+
+          APP_INFO="${STAGED_APP}/Info.plist"
+          APP_EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "${APP_INFO}")"
+          APP_BINARY="${STAGED_APP}/${APP_EXECUTABLE}"
+          BINARY_SIZE="$(stat -f%z "${APP_BINARY}")"
+
+          if [[ ! -f "${APP_BINARY}" ]]; then
+            echo "Expected simulator executable not found at ${APP_BINARY}" >&2
+            exit 1
+          fi
+
+          if [[ "${BINARY_SIZE}" -lt 100000 ]]; then
+            echo "Simulator binary is unexpectedly small: ${BINARY_SIZE} bytes" >&2
+            exit 1
+          fi
 
           {
             echo "Original app bundle path: ${APP_PATH}"
             echo "Staged app bundle path: ${STAGED_APP}"
+            echo "Executable path: ${APP_BINARY}"
+            echo "Executable size: ${BINARY_SIZE} bytes"
             echo
             du -sh "${APP_PATH}"
             du -sh "${STAGED_APP}"
@@ -95,17 +106,100 @@ jobs:
             find "${STAGED_APP}" -maxdepth 2 -mindepth 1 | sort
           } | tee "${SIZE_REPORT}"
 
-          ditto -c -k --keepParent "${STAGED_APP}" "${ARTIFACT_ZIP}"
-          ls -lh "${ARTIFACT_ZIP}" | tee -a "${SIZE_REPORT}"
+          COPYFILE_DISABLE=1 tar -C "${ARTIFACT_DIR}" -czf "${ARTIFACT_TGZ}" "RPGPlayerClone.app"
+          ls -lh "${ARTIFACT_TGZ}" | tee -a "${SIZE_REPORT}"
+
+      - name: Build unsigned iPhoneOS app
+        run: |
+          mkdir -p build
+          xcodebuild \
+            -workspace RPGPlayerClone.xcworkspace \
+            -scheme RPGPlayerClone \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DeviceDerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build | bundle exec xcpretty
+
+      - name: Prepare unsigned IPA artifact
+        run: |
+          set -euo pipefail
+          APP_PATH="build/DeviceDerivedData/Build/Products/Debug-iphoneos/RPGPlayerClone.app"
+          ARTIFACT_DIR="build/Artifacts"
+          PAYLOAD_DIR="${ARTIFACT_DIR}/Payload"
+          STAGED_APP="${PAYLOAD_DIR}/RPGPlayerClone.app"
+          IPA_PATH="${ARTIFACT_DIR}/RPGPlayerClone-unsigned.ipa"
+          SIZE_REPORT="${ARTIFACT_DIR}/RPGPlayerClone-unsigned-ipa-size.txt"
+
+          if [[ ! -d "${APP_PATH}" ]]; then
+            echo "Expected device app bundle not found at ${APP_PATH}" >&2
+            echo "Available build products:" >&2
+            find build/DeviceDerivedData/Build/Products -maxdepth 3 -print >&2 || true
+            exit 1
+          fi
+
+          mkdir -p "${PAYLOAD_DIR}"
+          rm -rf "${STAGED_APP}" "${IPA_PATH}"
+
+          rsync -aL "${APP_PATH}/" "${STAGED_APP}/"
+
+          APP_INFO="${STAGED_APP}/Info.plist"
+          APP_EXECUTABLE="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "${APP_INFO}")"
+          APP_BINARY="${STAGED_APP}/${APP_EXECUTABLE}"
+          BINARY_SIZE="$(stat -f%z "${APP_BINARY}")"
+
+          if [[ ! -f "${APP_BINARY}" ]]; then
+            echo "Expected device executable not found at ${APP_BINARY}" >&2
+            exit 1
+          fi
+
+          if [[ "${BINARY_SIZE}" -lt 100000 ]]; then
+            echo "Device binary is unexpectedly small: ${BINARY_SIZE} bytes" >&2
+            exit 1
+          fi
+
+          {
+            echo "Original app bundle path: ${APP_PATH}"
+            echo "Staged app bundle path: ${STAGED_APP}"
+            echo "Executable path: ${APP_BINARY}"
+            echo "Executable size: ${BINARY_SIZE} bytes"
+            echo
+            du -sh "${APP_PATH}"
+            du -sh "${STAGED_APP}"
+            echo
+            echo "Top-level bundle contents:"
+            find "${STAGED_APP}" -maxdepth 2 -mindepth 1 | sort
+          } | tee "${SIZE_REPORT}"
+
+          (
+            cd "${ARTIFACT_DIR}"
+            zip -qry "RPGPlayerClone-unsigned.ipa" Payload
+          )
+
+          ls -lh "${IPA_PATH}" | tee -a "${SIZE_REPORT}"
 
       - name: Upload simulator app artifact
         uses: actions/upload-artifact@v7
         with:
           name: RPGPlayerClone-simulator-app
           path: |
-            build/Artifacts/RPGPlayerClone-simulator-app.zip
+            build/Artifacts/RPGPlayerClone-simulator-app.tar.gz
             build/Artifacts/RPGPlayerClone-simulator-app-size.txt
           if-no-files-found: error
+          compression-level: 0
+
+      - name: Upload unsigned IPA artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: RPGPlayerClone-unsigned-ipa
+          path: |
+            build/Artifacts/RPGPlayerClone-unsigned.ipa
+            build/Artifacts/RPGPlayerClone-unsigned-ipa-size.txt
+          if-no-files-found: error
+          compression-level: 0
 
       - name: Upload build logs
         if: always()
