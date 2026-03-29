@@ -72,6 +72,7 @@ jobs:
           IPA_PATH="${ARTIFACT_DIR}/RPGPlayerClone-trollstore.ipa"
           REPORT_PATH="${ARTIFACT_DIR}/RPGPlayerClone-trollstore-report.txt"
           ENTITLEMENTS_PATH="${GITHUB_WORKSPACE}/RPGPlayerClone/RPGPlayerClone.entitlements"
+          BINARIES_LIST="${ARTIFACT_DIR}/mach-o-files.txt"
 
           if [[ ! -d "${APP_PATH}" ]]; then
             echo "Expected device app bundle not found at ${APP_PATH}" >&2
@@ -80,7 +81,7 @@ jobs:
           fi
 
           mkdir -p "${PAYLOAD_DIR}"
-          rm -rf "${STAGED_APP}" "${IPA_PATH}" "${REPORT_PATH}"
+          rm -rf "${STAGED_APP}" "${IPA_PATH}" "${REPORT_PATH}" "${BINARIES_LIST}"
           rsync -aL "${APP_PATH}/" "${STAGED_APP}/"
 
           APP_INFO="${STAGED_APP}/Info.plist"
@@ -110,17 +111,27 @@ jobs:
             find "${STAGED_APP}" -maxdepth 2 -mindepth 1 | sort
           } | tee "${REPORT_PATH}"
 
-          while IFS= read -r binary; do
-            if [[ "${binary}" == "${APP_BINARY}" ]]; then
-              ldid -S"${ENTITLEMENTS_PATH}" "${binary}"
-            else
-              ldid -S "${binary}"
+          while IFS= read -r -d '' candidate; do
+            if file "${candidate}" | grep -q 'Mach-O'; then
+              printf '%s\n' "${candidate}" >> "${BINARIES_LIST}"
             fi
-          done < <(
-            find "${STAGED_APP}" -type f -print0 \
-            | xargs -0 file \
-            | awk -F: '/Mach-O/ {print $1}'
-          )
+          done < <(find "${STAGED_APP}" -type f -print0)
+
+          if [[ ! -s "${BINARIES_LIST}" ]]; then
+            echo "No Mach-O binaries found inside staged app bundle." >&2
+            find "${STAGED_APP}" -maxdepth 3 -print >&2 || true
+            exit 1
+          fi
+
+          {
+            echo
+            echo "Mach-O binaries:"
+            cat "${BINARIES_LIST}"
+          } | tee -a "${REPORT_PATH}"
+
+          while IFS= read -r binary; do
+            ldid -S"${ENTITLEMENTS_PATH}" "${binary}"
+          done < "${BINARIES_LIST}"
 
           (
             cd "${ARTIFACT_DIR}"
