@@ -19,7 +19,6 @@
 		63DD0E68E5CB04180412A563 /* MKXPZWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265AE0016FC945CC09E3E5A1 /* MKXPZWrapper.swift */; };
 		6B886E3E19E0D98911A7E83C /* GameType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 620FD6273C085D0A4818FB5E /* GameType.swift */; };
 		86F2541C61EF3A9744A412E5 /* EasyRPGWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B84028AD7898355DF9CB0DF9 /* EasyRPGWrapper.swift */; };
-		A8F5F6ED1D3123B61DC77B32 /* Pods_RPGPlayerClone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69E13E54BCE6209781973217 /* Pods_RPGPlayerClone.framework */; };
 		B9A15AE8E636990C5B10ECDE /* GameControllerMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5FBA9A62627368CE698D952 /* GameControllerMonitor.swift */; };
 		C1327D7AC17372DC9FF3F915 /* GameInputDispatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0529AE8C3C7AC329BA37AF7D /* GameInputDispatcher.swift */; };
 		C8B29327714BB1FBBB8A8903 /* FileImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A77BB3A2AC7B43B425F052E /* FileImporter.swift */; };
@@ -27,6 +26,7 @@
 		D53BAB54F0E55A533C5B5B85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00E0C2550DB01AC75DCA8D6 /* AppDelegate.swift */; };
 		DC2EDF9919776EBE8F8C4B28 /* VirtualGamepadResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0388C9368806E89383E7E8E /* VirtualGamepadResourceLoader.swift */; };
 		EBAE281C04B28AFC44C1C6B3 /* FileManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C9CE811C31295235DD87D3 /* FileManager+Extensions.swift */; };
+		F0E3861320BA40BC9C592265 /* Pods_RPGPlayerClone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C16A21114063BFB31FF04110 /* Pods_RPGPlayerClone.framework */; };
 		F8B6E2D05D42F77A4C3802BB /* GameLibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC01D2EB79C13ABC85B54C02 /* GameLibraryViewModel.swift */; };
 		FB082E93363D3D67D26AD6ED /* GameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B583DA3D6C3FA122D73338 /* GameDetector.swift */; };
 /* End PBXBuildFile section */
@@ -44,8 +44,7 @@
 		474402A88FD61653280D9966 /* ArchiveExtractor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ArchiveExtractor.h; sourceTree = "<group>"; };
 		59715435F4E46932207E09AF /* VirtualGamepadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepadView.swift; sourceTree = "<group>"; };
 		620FD6273C085D0A4818FB5E /* GameType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameType.swift; sourceTree = "<group>"; };
-		69E13E54BCE6209781973217 /* Pods_RPGPlayerClone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RPGPlayerClone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6C99631CC5B74871E5BB48B0 /* Pods-RPGPlayerClone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.release.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.release.xcconfig"; sourceTree = "<group>"; };
+		66A5A9AC4050963C0BF1D8E9 /* Pods-RPGPlayerClone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.debug.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.debug.xcconfig"; sourceTree = "<group>"; };
 		85CF74F3F7A2EF3159CF0DA7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		93D4E1423675E5FFD636379C /* RPGPlayerClone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RPGPlayerClone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A77BB3A2AC7B43B425F052E /* FileImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImporter.swift; sourceTree = "<group>"; };
@@ -53,19 +52,20 @@
 		AF9033A82AE9DF8F5E4B1125 /* GameModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModel.swift; sourceTree = "<group>"; };
 		B84028AD7898355DF9CB0DF9 /* EasyRPGWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EasyRPGWrapper.swift; sourceTree = "<group>"; };
 		BC01D2EB79C13ABC85B54C02 /* GameLibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLibraryViewModel.swift; sourceTree = "<group>"; };
+		C16A21114063BFB31FF04110 /* Pods_RPGPlayerClone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RPGPlayerClone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00E0C2550DB01AC75DCA8D6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D0388C9368806E89383E7E8E /* VirtualGamepadResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepadResourceLoader.swift; sourceTree = "<group>"; };
-		E43BC305E2F590AE2DE6165D /* Pods-RPGPlayerClone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.debug.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.debug.xcconfig"; sourceTree = "<group>"; };
+		E9CBBE2C845BAD5A0B874E83 /* Pods-RPGPlayerClone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.release.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.release.xcconfig"; sourceTree = "<group>"; };
 		F81ECE015ACDDFA60CDEE4E3 /* WebGameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebGameViewController.swift; sourceTree = "<group>"; };
 		F9C9CE811C31295235DD87D3 /* FileManager+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		2FCFE89D97ADD75E050039B2 /* Frameworks */ = {
+		FED90DE87EB8762D4659BC74 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A8F5F6ED1D3123B61DC77B32 /* Pods_RPGPlayerClone.framework in Frameworks */,
+				F0E3861320BA40BC9C592265 /* Pods_RPGPlayerClone.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,14 +103,12 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		70EE2793846CFA46E558175C /* Pods */ = {
+		5986F3DF0728E83FDCDA275D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E43BC305E2F590AE2DE6165D /* Pods-RPGPlayerClone.debug.xcconfig */,
-				6C99631CC5B74871E5BB48B0 /* Pods-RPGPlayerClone.release.xcconfig */,
+				C16A21114063BFB31FF04110 /* Pods_RPGPlayerClone.framework */,
 			);
-			name = Pods;
-			path = Pods;
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		8CD1971D0375DD85B5629EA1 /* Utils */ = {
@@ -128,17 +126,19 @@
 			children = (
 				B685769B4F25B3F4D2E06CEA /* RPGPlayerClone */,
 				00E0DFA3EFF4D9A3495C0756 /* Products */,
-				70EE2793846CFA46E558175C /* Pods */,
-				A4D71003C8353277352C7642 /* Frameworks */,
+				96F6B4F2EA6E6E149E90B991 /* Pods */,
+				5986F3DF0728E83FDCDA275D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
-		A4D71003C8353277352C7642 /* Frameworks */ = {
+		96F6B4F2EA6E6E149E90B991 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				69E13E54BCE6209781973217 /* Pods_RPGPlayerClone.framework */,
+				66A5A9AC4050963C0BF1D8E9 /* Pods-RPGPlayerClone.debug.xcconfig */,
+				E9CBBE2C845BAD5A0B874E83 /* Pods-RPGPlayerClone.release.xcconfig */,
 			);
-			name = Frameworks;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		B685769B4F25B3F4D2E06CEA /* RPGPlayerClone */ = {
@@ -200,10 +200,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 872AD10CCEBAF50ACEBF5261 /* Build configuration list for PBXNativeTarget "RPGPlayerClone" */;
 			buildPhases = (
-				EC71EC554671AA377285DC69 /* [CP] Check Pods Manifest.lock */,
+				8C561FC4BF2C2FFA9A806552 /* [CP] Check Pods Manifest.lock */,
 				A19467AE13E5A6DFA7CBFC47 /* Sources */,
-				2FCFE89D97ADD75E050039B2 /* Frameworks */,
-				EB6C57189262FB5AE464482E /* [CP] Copy Pods Resources */,
+				FED90DE87EB8762D4659BC74 /* Frameworks */,
+				124A51F0932A948BE25405F4 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -249,7 +249,7 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		EB6C57189262FB5AE464482E /* [CP] Copy Pods Resources */ = {
+		124A51F0932A948BE25405F4 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -266,7 +266,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		EC71EC554671AA377285DC69 /* [CP] Check Pods Manifest.lock */ = {
+		8C561FC4BF2C2FFA9A806552 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -324,7 +324,7 @@
 /* Begin XCBuildConfiguration section */
 		663CFF32A1405BEFFBA98B2F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6C99631CC5B74871E5BB48B0 /* Pods-RPGPlayerClone.release.xcconfig */;
+			baseConfigurationReference = E9CBBE2C845BAD5A0B874E83 /* Pods-RPGPlayerClone.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -397,6 +397,12 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+					"$(SRCROOT)/RPGPlayerClone",
+					"$(SRCROOT)/RPGPlayerClone/Services",
+				);
 				INFOPLIST_FILE = RPGPlayerClone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 0.1.0;
@@ -466,6 +472,12 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = NO;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+					"$(SRCROOT)/RPGPlayerClone",
+					"$(SRCROOT)/RPGPlayerClone/Services",
+				);
 				INFOPLIST_FILE = RPGPlayerClone/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				MARKETING_VERSION = 0.1.0;
@@ -484,7 +496,7 @@
 		};
 		F2A545D37B4CFA1B4A7E98B4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E43BC305E2F590AE2DE6165D /* Pods-RPGPlayerClone.debug.xcconfig */;
+			baseConfigurationReference = 66A5A9AC4050963C0BF1D8E9 /* Pods-RPGPlayerClone.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
