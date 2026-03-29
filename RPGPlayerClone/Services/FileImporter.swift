@@ -1,13 +1,5 @@
 import Foundation
 
-#if canImport(SSZipArchive)
-import SSZipArchive
-#endif
-
-#if canImport(UnrarKit)
-import UnrarKit
-#endif
-
 enum FileImporterError: LocalizedError {
     case unsupportedFormat(String)
     case archiveToolUnavailable(String)
@@ -84,36 +76,32 @@ final class FileImporter: @unchecked Sendable {
     }
 
     private func unzipArchive(from archiveURL: URL, to destinationRoot: URL) throws {
-        #if canImport(SSZipArchive)
         var unzipError: NSError?
-        let success = SSZipArchive.unzipFile(
+        let success = ArchiveExtractor.extractZip(
             atPath: archiveURL.path,
             toDestination: destinationRoot.path,
-            preserveAttributes: true,
-            overwrite: true,
-            password: nil,
-            error: &unzipError,
-            delegate: nil
+            error: &unzipError
         )
 
         guard success else {
             throw FileImporterError.extractionFailed(unzipError?.localizedDescription ?? "ZIP unknown error")
         }
-        #else
-        throw FileImporterError.archiveToolUnavailable("SSZipArchive")
-        #endif
     }
 
     private func unrarArchive(from archiveURL: URL, to destinationRoot: URL) throws {
-        #if canImport(UnrarKit)
-        do {
-            let archive = try URKArchive(path: archiveURL.path)
-            try archive.extractFiles(to: destinationRoot.path, overwrite: true)
-        } catch {
-            throw FileImporterError.extractionFailed(error.localizedDescription)
+        var rarError: NSError?
+        let success = ArchiveExtractor.extractRAR(
+            atPath: archiveURL.path,
+            toDestination: destinationRoot.path,
+            error: &rarError
+        )
+
+        guard success else {
+            if let rarError {
+                throw FileImporterError.extractionFailed(rarError.localizedDescription)
+            }
+
+            throw FileImporterError.archiveToolUnavailable("UnrarKit")
         }
-        #else
-        throw FileImporterError.archiveToolUnavailable("UnrarKit")
-        #endif
     }
 }

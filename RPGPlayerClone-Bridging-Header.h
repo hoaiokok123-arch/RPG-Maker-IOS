@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "RPGPlayerClone/Services/ArchiveExtractor.h"
 
 #if __has_include(<EasyRPGBridge/EasyRPGBridge.h>)
 #import <EasyRPGBridge/EasyRPGBridge.h>
