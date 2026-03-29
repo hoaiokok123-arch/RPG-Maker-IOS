@@ -1,4 +1,4 @@
-name: Build App Artifacts
+name: Build TrollStore IPA
 
 on:
   push:
@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 jobs:
-  build-artifacts:
-    name: Build Simulator App and Unsigned IPA
+  build-trollstore-ipa:
+    name: Build TrollStore IPA
     runs-on: macos-latest
     timeout-minutes: 45
 
@@ -27,10 +27,14 @@ jobs:
           ruby-version: "3.4"
           bundler-cache: true
 
-      - name: Install XcodeGen
+      - name: Install build tools
         run: |
           if ! command -v xcodegen >/dev/null 2>&1; then
             brew install xcodegen
+          fi
+
+          if ! command -v ldid >/dev/null 2>&1; then
+            brew install ldid
           fi
 
       - name: Show Xcode version
@@ -42,89 +46,7 @@ jobs:
       - name: Install CocoaPods dependencies
         run: bundle exec pod install
 
-      - name: Build for iOS Simulator
-        run: |
-          mkdir -p build
-          xcodebuild \
-            -workspace RPGPlayerClone.xcworkspace \
-            -scheme RPGPlayerClone \
-            -configuration Debug \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath build/DerivedData \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            ONLY_ACTIVE_ARCH=NO \
-            build | bundle exec xcpretty
-
-      - name: Prepare simulator app artifact
-        run: |
-          set -euo pipefail
-          APP_PATH="build/DerivedData/Build/Products/Debug-iphonesimulator/RPGPlayerClone.app"
-          ARTIFACT_DIR="build/Artifacts"
-          STAGED_APP="${ARTIFACT_DIR}/RPGPlayerClone.app"
-          ARTIFACT_TGZ="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app.tar.gz"
-          SIZE_REPORT="${ARTIFACT_DIR}/RPGPlayerClone-simulator-app-size.txt"
-
-          if [[ ! -d "${APP_PATH}" ]]; then
-            echo "Expected app bundle not found at ${APP_PATH}" >&2
-            echo "Available build products:" >&2
-            find build/DerivedData/Build/Products -maxdepth 3 -print >&2 || true
-            exit 1
-          fi
-
-          mkdir -p "${ARTIFACT_DIR}"
-          rm -rf "${STAGED_APP}" "${ARTIFACT_TGZ}"
-
-          rsync -aL "${APP_PATH}/" "${STAGED_APP}/"
-
-          APP_INFO="${STAGED_APP}/Info.plist"
-          APP_EXECUTABLE="$(
-            /usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "${APP_INFO}" 2>/dev/null \
-            || defaults read "${APP_INFO%.*}" CFBundleExecutable 2>/dev/null \
-            || true
-          )"
-          APP_BINARY=""
-
-          if [[ -n "${APP_EXECUTABLE}" && -f "${STAGED_APP}/${APP_EXECUTABLE}" ]]; then
-            APP_BINARY="${STAGED_APP}/${APP_EXECUTABLE}"
-          else
-            APP_BINARY="$(find "${STAGED_APP}" -maxdepth 1 -type f -perm -111 | head -n 1 || true)"
-          fi
-
-          if [[ -z "${APP_BINARY}" || ! -f "${APP_BINARY}" ]]; then
-            echo "Expected simulator executable not found inside ${STAGED_APP}" >&2
-            find "${STAGED_APP}" -maxdepth 2 -print >&2 || true
-            exit 1
-          fi
-
-          BINARY_SIZE="$(stat -f%z "${APP_BINARY}")"
-
-          {
-            echo "Original app bundle path: ${APP_PATH}"
-            echo "Staged app bundle path: ${STAGED_APP}"
-            echo "Bundle executable name: ${APP_EXECUTABLE}"
-            echo "Executable path: ${APP_BINARY}"
-            echo "Executable size: ${BINARY_SIZE} bytes"
-            echo
-            du -sh "${APP_PATH}"
-            du -sh "${STAGED_APP}"
-            echo
-            echo "Top-level bundle contents:"
-            find "${STAGED_APP}" -maxdepth 2 -mindepth 1 | sort
-          } | tee "${SIZE_REPORT}"
-
-          COPYFILE_DISABLE=1 tar -C "${ARTIFACT_DIR}" -czf "${ARTIFACT_TGZ}" "RPGPlayerClone.app"
-          ARCHIVE_SIZE="$(stat -f%z "${ARTIFACT_TGZ}")"
-          echo "Archive size: ${ARCHIVE_SIZE} bytes" | tee -a "${SIZE_REPORT}"
-          tar -tzf "${ARTIFACT_TGZ}" | head -n 50 | tee -a "${SIZE_REPORT}"
-
-          if [[ "${ARCHIVE_SIZE}" -lt 50000 ]]; then
-            echo "Simulator archive is unexpectedly small: ${ARCHIVE_SIZE} bytes" >&2
-            exit 1
-          fi
-
-      - name: Build unsigned iPhoneOS app
+      - name: Build iPhoneOS app
         run: |
           mkdir -p build
           xcodebuild \
@@ -139,26 +61,26 @@ jobs:
             ONLY_ACTIVE_ARCH=NO \
             build | bundle exec xcpretty
 
-      - name: Prepare unsigned IPA artifact
+      - name: Package TrollStore IPA
         run: |
           set -euo pipefail
+
           APP_PATH="build/DeviceDerivedData/Build/Products/Debug-iphoneos/RPGPlayerClone.app"
           ARTIFACT_DIR="build/Artifacts"
           PAYLOAD_DIR="${ARTIFACT_DIR}/Payload"
           STAGED_APP="${PAYLOAD_DIR}/RPGPlayerClone.app"
-          IPA_PATH="${ARTIFACT_DIR}/RPGPlayerClone-unsigned.ipa"
-          SIZE_REPORT="${ARTIFACT_DIR}/RPGPlayerClone-unsigned-ipa-size.txt"
+          IPA_PATH="${ARTIFACT_DIR}/RPGPlayerClone-trollstore.ipa"
+          REPORT_PATH="${ARTIFACT_DIR}/RPGPlayerClone-trollstore-report.txt"
+          ENTITLEMENTS_PATH="${GITHUB_WORKSPACE}/RPGPlayerClone/RPGPlayerClone.entitlements"
 
           if [[ ! -d "${APP_PATH}" ]]; then
             echo "Expected device app bundle not found at ${APP_PATH}" >&2
-            echo "Available build products:" >&2
             find build/DeviceDerivedData/Build/Products -maxdepth 3 -print >&2 || true
             exit 1
           fi
 
           mkdir -p "${PAYLOAD_DIR}"
-          rm -rf "${STAGED_APP}" "${IPA_PATH}"
-
+          rm -rf "${STAGED_APP}" "${IPA_PATH}" "${REPORT_PATH}"
           rsync -aL "${APP_PATH}/" "${STAGED_APP}/"
 
           APP_INFO="${STAGED_APP}/Info.plist"
@@ -167,63 +89,71 @@ jobs:
             || defaults read "${APP_INFO%.*}" CFBundleExecutable 2>/dev/null \
             || true
           )"
-          APP_BINARY=""
 
-          if [[ -n "${APP_EXECUTABLE}" && -f "${STAGED_APP}/${APP_EXECUTABLE}" ]]; then
-            APP_BINARY="${STAGED_APP}/${APP_EXECUTABLE}"
-          else
-            APP_BINARY="$(find "${STAGED_APP}" -maxdepth 1 -type f -perm -111 | head -n 1 || true)"
-          fi
-
-          if [[ -z "${APP_BINARY}" || ! -f "${APP_BINARY}" ]]; then
-            echo "Expected device executable not found inside ${STAGED_APP}" >&2
+          if [[ -z "${APP_EXECUTABLE}" || ! -f "${STAGED_APP}/${APP_EXECUTABLE}" ]]; then
+            echo "Could not locate app executable inside ${STAGED_APP}" >&2
             find "${STAGED_APP}" -maxdepth 2 -print >&2 || true
             exit 1
           fi
 
-          BINARY_SIZE="$(stat -f%z "${APP_BINARY}")"
+          APP_BINARY="${STAGED_APP}/${APP_EXECUTABLE}"
 
           {
-            echo "Original app bundle path: ${APP_PATH}"
-            echo "Staged app bundle path: ${STAGED_APP}"
-            echo "Bundle executable name: ${APP_EXECUTABLE}"
-            echo "Executable path: ${APP_BINARY}"
-            echo "Executable size: ${BINARY_SIZE} bytes"
+            echo "App path: ${APP_PATH}"
+            echo "Staged app: ${STAGED_APP}"
+            echo "Executable: ${APP_BINARY}"
             echo
-            du -sh "${APP_PATH}"
+            echo "Pre-sign bundle size:"
             du -sh "${STAGED_APP}"
             echo
-            echo "Top-level bundle contents:"
+            echo "Top-level staged app contents:"
             find "${STAGED_APP}" -maxdepth 2 -mindepth 1 | sort
-          } | tee "${SIZE_REPORT}"
+          } | tee "${REPORT_PATH}"
+
+          while IFS= read -r binary; do
+            if [[ "${binary}" == "${APP_BINARY}" ]]; then
+              ldid -S"${ENTITLEMENTS_PATH}" "${binary}"
+            else
+              ldid -S "${binary}"
+            fi
+          done < <(
+            find "${STAGED_APP}" -type f -print0 \
+            | xargs -0 file \
+            | awk -F: '/Mach-O/ {print $1}'
+          )
 
           (
             cd "${ARTIFACT_DIR}"
-            ditto -c -k --sequesterRsrc --keepParent Payload "RPGPlayerClone-unsigned.ipa"
+            ditto -c -k --sequesterRsrc --keepParent Payload "RPGPlayerClone-trollstore.ipa"
           )
 
           IPA_SIZE="$(stat -f%z "${IPA_PATH}")"
-          echo "IPA size: ${IPA_SIZE} bytes" | tee -a "${SIZE_REPORT}"
-          unzip -l "${IPA_PATH}" | tee -a "${SIZE_REPORT}"
+          APP_BINARY_SIZE="$(stat -f%z "${APP_BINARY}")"
 
-          if [[ "${IPA_SIZE}" -lt 50000 ]]; then
-            echo "Unsigned IPA is unexpectedly small: ${IPA_SIZE} bytes" >&2
+          {
+            echo
+            echo "Executable size: ${APP_BINARY_SIZE} bytes"
+            echo "IPA size: ${IPA_SIZE} bytes"
+            echo
+            echo "IPA contents:"
+            unzip -l "${IPA_PATH}"
+          } | tee -a "${REPORT_PATH}"
+
+          if [[ "${APP_BINARY_SIZE}" -lt 100000 ]]; then
+            echo "Device executable is unexpectedly small: ${APP_BINARY_SIZE} bytes" >&2
             exit 1
           fi
 
-      - name: Upload simulator app artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: RPGPlayerClone-simulator-app
-          path: build/Artifacts/RPGPlayerClone-simulator-app.tar.gz
-          if-no-files-found: error
-          compression-level: 0
+          if [[ "${IPA_SIZE}" -lt 50000 ]]; then
+            echo "TrollStore IPA is unexpectedly small: ${IPA_SIZE} bytes" >&2
+            exit 1
+          fi
 
-      - name: Upload unsigned IPA artifact
+      - name: Upload TrollStore IPA
         uses: actions/upload-artifact@v7
         with:
-          name: RPGPlayerClone-unsigned-ipa
-          path: build/Artifacts/RPGPlayerClone-unsigned.ipa
+          name: RPGPlayerClone-trollstore-ipa
+          path: build/Artifacts/RPGPlayerClone-trollstore.ipa
           if-no-files-found: error
           compression-level: 0
 
@@ -233,9 +163,7 @@ jobs:
         with:
           name: RPGPlayerClone-build-logs
           path: |
-            build/DerivedData/Logs
             build/DeviceDerivedData/Logs
-            build/DerivedData/Build/Intermediates.noindex/XCBuildData
             build/DeviceDerivedData/Build/Intermediates.noindex/XCBuildData
             build/Artifacts
           if-no-files-found: warn
