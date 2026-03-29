@@ -115,7 +115,14 @@ jobs:
           } | tee "${SIZE_REPORT}"
 
           COPYFILE_DISABLE=1 tar -C "${ARTIFACT_DIR}" -czf "${ARTIFACT_TGZ}" "RPGPlayerClone.app"
-          ls -lh "${ARTIFACT_TGZ}" | tee -a "${SIZE_REPORT}"
+          ARCHIVE_SIZE="$(stat -f%z "${ARTIFACT_TGZ}")"
+          echo "Archive size: ${ARCHIVE_SIZE} bytes" | tee -a "${SIZE_REPORT}"
+          tar -tzf "${ARTIFACT_TGZ}" | head -n 50 | tee -a "${SIZE_REPORT}"
+
+          if [[ "${ARCHIVE_SIZE}" -lt 50000 ]]; then
+            echo "Simulator archive is unexpectedly small: ${ARCHIVE_SIZE} bytes" >&2
+            exit 1
+          fi
 
       - name: Build unsigned iPhoneOS app
         run: |
@@ -192,18 +199,23 @@ jobs:
 
           (
             cd "${ARTIFACT_DIR}"
-            zip -qry "RPGPlayerClone-unsigned.ipa" Payload
+            ditto -c -k --sequesterRsrc --keepParent Payload "RPGPlayerClone-unsigned.ipa"
           )
 
-          ls -lh "${IPA_PATH}" | tee -a "${SIZE_REPORT}"
+          IPA_SIZE="$(stat -f%z "${IPA_PATH}")"
+          echo "IPA size: ${IPA_SIZE} bytes" | tee -a "${SIZE_REPORT}"
+          unzip -l "${IPA_PATH}" | tee -a "${SIZE_REPORT}"
+
+          if [[ "${IPA_SIZE}" -lt 50000 ]]; then
+            echo "Unsigned IPA is unexpectedly small: ${IPA_SIZE} bytes" >&2
+            exit 1
+          fi
 
       - name: Upload simulator app artifact
         uses: actions/upload-artifact@v7
         with:
           name: RPGPlayerClone-simulator-app
-          path: |
-            build/Artifacts/RPGPlayerClone-simulator-app.tar.gz
-            build/Artifacts/RPGPlayerClone-simulator-app-size.txt
+          path: build/Artifacts/RPGPlayerClone-simulator-app.tar.gz
           if-no-files-found: error
           compression-level: 0
 
@@ -211,9 +223,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: RPGPlayerClone-unsigned-ipa
-          path: |
-            build/Artifacts/RPGPlayerClone-unsigned.ipa
-            build/Artifacts/RPGPlayerClone-unsigned-ipa-size.txt
+          path: build/Artifacts/RPGPlayerClone-unsigned.ipa
           if-no-files-found: error
           compression-level: 0
 
