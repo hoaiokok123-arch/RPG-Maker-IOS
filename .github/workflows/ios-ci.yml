@@ -5,11 +5,13 @@ on:
     branches:
       - main
       - master
+    paths-ignore:
+      - .ci-reports/**
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-trollstore-ipa:
@@ -191,3 +193,63 @@ jobs:
             build/xcodebuild-iphoneos.log
             build/Artifacts
           if-no-files-found: warn
+
+      - name: Write success summary
+        if: success()
+        run: |
+          mkdir -p .ci-reports
+          cat > .ci-reports/latest-build-summary.txt <<EOF
+          status: success
+          workflow: Build TrollStore IPA
+          run_id: ${{ github.run_id }}
+          run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          commit: ${{ github.sha }}
+          branch: ${{ github.ref_name }}
+          updated_at_utc: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          artifact: RPGPlayerClone-trollstore-ipa
+          EOF
+
+      - name: Write failure summary
+        if: failure()
+        run: |
+          mkdir -p .ci-reports
+          LOG_PATH="build/xcodebuild-iphoneos.log"
+          REPORT_PATH=".ci-reports/latest-build-summary.txt"
+
+          {
+            echo "status: failure"
+            echo "workflow: Build TrollStore IPA"
+            echo "run_id: ${{ github.run_id }}"
+            echo "run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "commit: ${{ github.sha }}"
+            echo "branch: ${{ github.ref_name }}"
+            echo "updated_at_utc: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            echo
+            echo "error_matches:"
+            if [[ -f "${LOG_PATH}" ]]; then
+              grep -n -E "error:|❌|\\*\\* BUILD FAILED \\*\\*" "${LOG_PATH}" | tail -n 80 || true
+            else
+              echo "log file not found: ${LOG_PATH}"
+            fi
+            echo
+            echo "raw_tail:"
+            if [[ -f "${LOG_PATH}" ]]; then
+              tail -n 220 "${LOG_PATH}" || true
+            else
+              echo "log file not found: ${LOG_PATH}"
+            fi
+          } > "${REPORT_PATH}"
+
+      - name: Commit CI summary
+        if: always()
+        run: |
+          if [[ -z "$(git status --porcelain -- .ci-reports/latest-build-summary.txt)" ]]; then
+            echo "No CI summary changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .ci-reports/latest-build-summary.txt
+          git commit -m "chore: update CI status summary [skip ci]"
+          git push origin HEAD:${GITHUB_REF_NAME}
