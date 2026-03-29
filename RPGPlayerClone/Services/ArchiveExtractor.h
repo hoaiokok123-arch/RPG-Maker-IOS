@@ -4,13 +4,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ArchiveExtractor : NSObject
 
-+ (BOOL)extractZipAtPath:(NSString *)archivePath
-          toDestination:(NSString *)destinationPath
-                  error:(NSError * _Nullable * _Nullable)error;
++ (nullable NSString *)extractZipAtPath:(NSString *)archivePath
+                          toDestination:(NSString *)destinationPath
+    NS_SWIFT_NAME(extractZip(atPath:toDestination:));
 
-+ (BOOL)extractRARAtPath:(NSString *)archivePath
-          toDestination:(NSString *)destinationPath
-                  error:(NSError * _Nullable * _Nullable)error;
++ (nullable NSString *)extractRARAtPath:(NSString *)archivePath
+                          toDestination:(NSString *)destinationPath
+    NS_SWIFT_NAME(extractRAR(atPath:toDestination:));
 
 @end
 

@@ -76,24 +76,20 @@ final class FileImporter: @unchecked Sendable {
     }
 
     private func unzipArchive(from archiveURL: URL, to destinationRoot: URL) throws {
-        do {
-            try ArchiveExtractor.extractZip(
-                atPath: archiveURL.path,
-                toDestination: destinationRoot.path
-            )
-        } catch {
-            throw FileImporterError.extractionFailed(error.localizedDescription)
+        if let message = ArchiveExtractor.extractZip(
+            atPath: archiveURL.path,
+            toDestination: destinationRoot.path
+        ) {
+            throw FileImporterError.extractionFailed(message)
         }
     }
 
     private func unrarArchive(from archiveURL: URL, to destinationRoot: URL) throws {
-        do {
-            try ArchiveExtractor.extractRAR(
-                atPath: archiveURL.path,
-                toDestination: destinationRoot.path
-            )
-        } catch {
-            throw FileImporterError.extractionFailed(error.localizedDescription)
+        if let message = ArchiveExtractor.extractRAR(
+            atPath: archiveURL.path,
+            toDestination: destinationRoot.path
+        ) {
+            throw FileImporterError.extractionFailed(message)
         }
     }
 }
