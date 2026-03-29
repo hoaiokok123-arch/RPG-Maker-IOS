@@ -25,6 +25,9 @@ settings:
       - $(SRCROOT)
       - $(SRCROOT)/RPGPlayerClone
       - $(SRCROOT)/RPGPlayerClone/Services
+    OTHER_LDFLAGS:
+      - $(inherited)
+      - -lc++
     ENABLE_PREVIEWS: NO
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
