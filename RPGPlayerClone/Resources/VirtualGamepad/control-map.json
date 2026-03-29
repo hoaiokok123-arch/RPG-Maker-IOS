@@ -1,0 +1,14 @@
+{
+  "up": ["ArrowUp"],
+  "down": ["ArrowDown"],
+  "left": ["ArrowLeft"],
+  "right": ["ArrowRight"],
+  "a": ["Enter"],
+  "b": ["Escape"],
+  "x": ["ShiftLeft"],
+  "y": ["ControlLeft"],
+  "l": ["PageUp"],
+  "r": ["PageDown"],
+  "start": ["Escape"],
+  "select": ["ControlLeft"]
+}

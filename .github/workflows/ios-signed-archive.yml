@@ -1,0 +1,170 @@
+name: iOS Signed Archive
+
+on:
+  workflow_dispatch:
+    inputs:
+      export_method:
+        description: "Xcode export method"
+        required: true
+        default: "ad-hoc"
+        type: choice
+        options:
+          - development
+          - ad-hoc
+          - app-store
+
+permissions:
+  contents: read
+
+jobs:
+  archive-device:
+    name: Archive Signed iOS App
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+      APP_BUNDLE_IDENTIFIER: ${{ secrets.APP_BUNDLE_IDENTIFIER }}
+      PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.PROVISIONING_PROFILE_SPECIFIER }}
+
+    steps:
+      - name: Validate required secrets
+        run: |
+          for key in BUILD_CERTIFICATE_BASE64 P12_PASSWORD BUILD_PROVISION_PROFILE_BASE64 KEYCHAIN_PASSWORD DEVELOPMENT_TEAM APP_BUNDLE_IDENTIFIER; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "Missing secret: ${key}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Install XcodeGen
+        run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install signing certificate and provisioning profile
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          PP_PATH="$RUNNER_TEMP/build_pp.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          CERTIFICATE_PATH="$CERTIFICATE_PATH" \
+          PP_PATH="$PP_PATH" \
+          python3 - <<'PY'
+          import base64
+          import os
+          from pathlib import Path
+
+          Path(os.environ["CERTIFICATE_PATH"]).write_bytes(
+              base64.b64decode(os.environ["BUILD_CERTIFICATE_BASE64"])
+          )
+          Path(os.environ["PP_PATH"]).write_bytes(
+              base64.b64decode(os.environ["BUILD_PROVISION_PROFILE_BASE64"])
+          )
+          PY
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Install CocoaPods dependencies
+        run: bundle exec pod install
+
+      - name: Archive for iOS device
+        run: |
+          mkdir -p build
+          EXTRA_ARGS=()
+
+          if [[ -n "${PROVISIONING_PROFILE_SPECIFIER:-}" ]]; then
+            EXTRA_ARGS+=(PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE_SPECIFIER")
+          fi
+
+          xcodebuild \
+            -workspace RPGPlayerClone.xcworkspace \
+            -scheme RPGPlayerClone \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/RPGPlayerClone.xcarchive \
+            -derivedDataPath build/DerivedData \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            PRODUCT_BUNDLE_IDENTIFIER="$APP_BUNDLE_IDENTIFIER" \
+            "${EXTRA_ARGS[@]}" \
+            archive | bundle exec xcpretty
+
+      - name: Create export options plist
+        run: |
+          cat > build/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>${{ inputs.export_method }}</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>teamID</key>
+            <string>${DEVELOPMENT_TEAM}</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <false/>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Export IPA
+        run: |
+          xcodebuild \
+            -exportArchive \
+            -archivePath build/RPGPlayerClone.xcarchive \
+            -exportOptionsPlist build/ExportOptions.plist \
+            -exportPath build/export | bundle exec xcpretty
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: RPGPlayerClone-ipa
+          path: build/export
+          if-no-files-found: error
+
+      - name: Upload archive logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: RPGPlayerClone-archive-logs
+          path: |
+            build/DerivedData/Logs
+            build/RPGPlayerClone.xcarchive
+          if-no-files-found: warn
+
+      - name: Clean up signing assets
+        if: always()
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          PP_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$PP_DIR"/build_pp.mobileprovision || true

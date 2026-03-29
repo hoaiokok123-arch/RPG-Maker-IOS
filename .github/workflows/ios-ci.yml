@@ -1,0 +1,75 @@
+name: iOS CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-simulator:
+    name: Build iOS Simulator App
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Install XcodeGen
+        run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Install CocoaPods dependencies
+        run: bundle exec pod install
+
+      - name: Build for iOS Simulator
+        run: |
+          mkdir -p build
+          xcodebuild \
+            -workspace RPGPlayerClone.xcworkspace \
+            -scheme RPGPlayerClone \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            ONLY_ACTIVE_ARCH=NO \
+            build | bundle exec xcpretty
+
+      - name: Upload simulator app artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: RPGPlayerClone-simulator-app
+          path: build/DerivedData/Build/Products/Debug-iphonesimulator/RPGPlayerClone.app
+          if-no-files-found: error
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: RPGPlayerClone-build-logs
+          path: |
+            build/DerivedData/Logs
+            build/DerivedData/Build/Intermediates.noindex/XCBuildData
+          if-no-files-found: warn
