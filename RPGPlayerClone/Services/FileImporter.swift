@@ -76,32 +76,24 @@ final class FileImporter: @unchecked Sendable {
     }
 
     private func unzipArchive(from archiveURL: URL, to destinationRoot: URL) throws {
-        var unzipError: NSError?
-        let success = ArchiveExtractor.extractZip(
-            atPath: archiveURL.path,
-            toDestination: destinationRoot.path,
-            error: &unzipError
-        )
-
-        guard success else {
-            throw FileImporterError.extractionFailed(unzipError?.localizedDescription ?? "ZIP unknown error")
+        do {
+            try ArchiveExtractor.extractZip(
+                atPath: archiveURL.path,
+                toDestination: destinationRoot.path
+            )
+        } catch {
+            throw FileImporterError.extractionFailed(error.localizedDescription)
         }
     }
 
     private func unrarArchive(from archiveURL: URL, to destinationRoot: URL) throws {
-        var rarError: NSError?
-        let success = ArchiveExtractor.extractRAR(
-            atPath: archiveURL.path,
-            toDestination: destinationRoot.path,
-            error: &rarError
-        )
-
-        guard success else {
-            if let rarError {
-                throw FileImporterError.extractionFailed(rarError.localizedDescription)
-            }
-
-            throw FileImporterError.archiveToolUnavailable("UnrarKit")
+        do {
+            try ArchiveExtractor.extractRAR(
+                atPath: archiveURL.path,
+                toDestination: destinationRoot.path
+            )
+        } catch {
+            throw FileImporterError.extractionFailed(error.localizedDescription)
         }
     }
 }
