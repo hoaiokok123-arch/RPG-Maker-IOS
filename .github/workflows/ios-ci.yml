@@ -265,15 +265,38 @@ jobs:
       - name: Commit CI summary
         if: always()
         run: |
-          if [[ -z "$(git status --porcelain -- .ci-reports/latest-build-summary.txt)" ]]; then
+          SUMMARY_PATH=".ci-reports/latest-build-summary.txt"
+          if [[ -z "$(git status --porcelain -- "${SUMMARY_PATH}")" ]]; then
             echo "No CI summary changes to commit."
             exit 0
           fi
 
+          TMP_SUMMARY="$(mktemp)"
+          cp "${SUMMARY_PATH}" "${TMP_SUMMARY}"
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin "${GITHUB_REF_NAME}"
-          git add .ci-reports/latest-build-summary.txt
-          git commit -m "chore: update CI status summary [skip ci]"
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          for attempt in 1 2 3; do
+            git fetch origin "${GITHUB_REF_NAME}"
+            git checkout -B ci-summary "origin/${GITHUB_REF_NAME}"
+            mkdir -p .ci-reports
+            cp "${TMP_SUMMARY}" "${SUMMARY_PATH}"
+
+            if [[ -z "$(git status --porcelain -- "${SUMMARY_PATH}")" ]]; then
+              echo "No CI summary changes to commit after syncing branch."
+              exit 0
+            fi
+
+            git add "${SUMMARY_PATH}"
+            git commit -m "chore: update CI status summary [skip ci]"
+            if git push origin HEAD:${GITHUB_REF_NAME}; then
+              exit 0
+            fi
+
+            echo "Retrying CI summary push (${attempt}/3)..."
+            git reset --hard "origin/${GITHUB_REF_NAME}"
+            sleep 2
+          done
+
+          echo "Unable to push CI summary after retries."
+          exit 0
