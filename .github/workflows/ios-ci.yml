@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -64,6 +66,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             ENABLE_PREVIEWS=NO \
+            ENABLE_DEBUG_DYLIB=NO \
             ONLY_ACTIVE_ARCH=NO \
             build 2>&1 | tee "${LOG_PATH}" | bundle exec xcpretty
 
@@ -112,11 +115,17 @@ jobs:
           fi
 
           APP_BINARY="${STAGED_APP}/${APP_EXECUTABLE}"
+          PRIMARY_RUNTIME_BINARY="${APP_BINARY}"
+          DEBUG_DYLIB="${STAGED_APP}/${APP_EXECUTABLE}.debug.dylib"
+          if [[ -f "${DEBUG_DYLIB}" ]]; then
+            PRIMARY_RUNTIME_BINARY="${DEBUG_DYLIB}"
+          fi
 
           {
             echo "App path: ${APP_PATH}"
             echo "Staged app: ${STAGED_APP}"
             echo "Executable: ${APP_BINARY}"
+            echo "Primary runtime binary: ${PRIMARY_RUNTIME_BINARY}"
             echo
             echo "Pre-sign bundle size:"
             du -sh "${STAGED_APP}"
@@ -143,8 +152,12 @@ jobs:
             cat "${BINARIES_LIST}"
           } | tee -a "${REPORT_PATH}"
 
+          ldid -S"${ENTITLEMENTS_PATH}" "${APP_BINARY}"
           while IFS= read -r binary; do
-            ldid -S"${ENTITLEMENTS_PATH}" "${binary}"
+            if [[ "${binary}" == "${APP_BINARY}" ]]; then
+              continue
+            fi
+            ldid -S "${binary}"
           done < "${BINARIES_LIST}"
 
           (
@@ -154,18 +167,20 @@ jobs:
 
           IPA_SIZE="$(stat -f%z "${IPA_PATH}")"
           APP_BINARY_SIZE="$(stat -f%z "${APP_BINARY}")"
+          PRIMARY_RUNTIME_BINARY_SIZE="$(stat -f%z "${PRIMARY_RUNTIME_BINARY}")"
 
           {
             echo
             echo "Executable size: ${APP_BINARY_SIZE} bytes"
+            echo "Primary runtime binary size: ${PRIMARY_RUNTIME_BINARY_SIZE} bytes"
             echo "IPA size: ${IPA_SIZE} bytes"
             echo
             echo "IPA contents:"
             unzip -l "${IPA_PATH}"
           } | tee -a "${REPORT_PATH}"
 
-          if [[ "${APP_BINARY_SIZE}" -lt 100000 ]]; then
-            echo "Device executable is unexpectedly small: ${APP_BINARY_SIZE} bytes" >&2
+          if [[ "${PRIMARY_RUNTIME_BINARY_SIZE}" -lt 100000 ]]; then
+            echo "Primary runtime binary is unexpectedly small: ${PRIMARY_RUNTIME_BINARY_SIZE} bytes" >&2
             exit 1
           fi
 
@@ -232,6 +247,13 @@ jobs:
               echo "log file not found: ${LOG_PATH}"
             fi
             echo
+            echo "trollstore_report_tail:"
+            if [[ -f "build/Artifacts/RPGPlayerClone-trollstore-report.txt" ]]; then
+              tail -n 220 "build/Artifacts/RPGPlayerClone-trollstore-report.txt" || true
+            else
+              echo "report file not found: build/Artifacts/RPGPlayerClone-trollstore-report.txt"
+            fi
+            echo
             echo "raw_tail:"
             if [[ -f "${LOG_PATH}" ]]; then
               tail -n 220 "${LOG_PATH}" || true
@@ -250,6 +272,8 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "${GITHUB_REF_NAME}"
           git add .ci-reports/latest-build-summary.txt
           git commit -m "chore: update CI status summary [skip ci]"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin HEAD:${GITHUB_REF_NAME}
