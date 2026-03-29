@@ -20,6 +20,11 @@ settings:
     INFOPLIST_FILE: RPGPlayerClone/Info.plist
     CODE_SIGN_ENTITLEMENTS: RPGPlayerClone/RPGPlayerClone.entitlements
     SWIFT_OBJC_BRIDGING_HEADER: RPGPlayerClone-Bridging-Header.h
+    HEADER_SEARCH_PATHS:
+      - $(inherited)
+      - $(SRCROOT)
+      - $(SRCROOT)/RPGPlayerClone
+      - $(SRCROOT)/RPGPlayerClone/Services
     ENABLE_PREVIEWS: NO
     ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
