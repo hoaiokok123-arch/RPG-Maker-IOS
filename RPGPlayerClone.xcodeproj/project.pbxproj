@@ -11,6 +11,7 @@
 		02288EB827C5BD522534E9D3 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85CF74F3F7A2EF3159CF0DA7 /* SettingsView.swift */; };
 		1A669A9D6D0A7BF2251940BC /* GameModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF9033A82AE9DF8F5E4B1125 /* GameModel.swift */; };
 		1B37E371B2D257146AEC28C8 /* GameLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020D73CF5F7EA4FBD2DA17AB /* GameLibraryView.swift */; };
+		240526446E947FC7ECA06D2D /* Pods_RPGPlayerClone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C15108D8F5A4F3B92A73F985 /* Pods_RPGPlayerClone.framework */; };
 		2B396BAC15ED190653C1DE71 /* VirtualGamepadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59715435F4E46932207E09AF /* VirtualGamepadView.swift */; };
 		322F609E8495E852546A19F3 /* WebGameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81ECE015ACDDFA60CDEE4E3 /* WebGameViewController.swift */; };
 		3CB922503C354E97684C4A35 /* ArchiveExtractor.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B88AA62987B3E808CE5CAD /* ArchiveExtractor.m */; };
@@ -25,7 +26,6 @@
 		D4A8390E5ACF8853D02C55FF /* RPGPlayerCloneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18351E19EA72B695B1356171 /* RPGPlayerCloneApp.swift */; };
 		D53BAB54F0E55A533C5B5B85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00E0C2550DB01AC75DCA8D6 /* AppDelegate.swift */; };
 		DC2EDF9919776EBE8F8C4B28 /* VirtualGamepadResourceLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0388C9368806E89383E7E8E /* VirtualGamepadResourceLoader.swift */; };
-		E759EF0F58EA9E96B8C81883 /* Pods_RPGPlayerClone.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8C6E219BA48E2F7B605208A0 /* Pods_RPGPlayerClone.framework */; };
 		EBAE281C04B28AFC44C1C6B3 /* FileManager+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C9CE811C31295235DD87D3 /* FileManager+Extensions.swift */; };
 		F8B6E2D05D42F77A4C3802BB /* GameLibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC01D2EB79C13ABC85B54C02 /* GameLibraryViewModel.swift */; };
 		FB082E93363D3D67D26AD6ED /* GameDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B583DA3D6C3FA122D73338 /* GameDetector.swift */; };
@@ -38,7 +38,6 @@
 		08183FD308EDDD63D4637478 /* NativeEngineBridgeLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeEngineBridgeLoader.swift; sourceTree = "<group>"; };
 		18351E19EA72B695B1356171 /* RPGPlayerCloneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RPGPlayerCloneApp.swift; sourceTree = "<group>"; };
 		193961E739A9038C45F01C7C /* GameLibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLibraryStore.swift; sourceTree = "<group>"; };
-		1B877D3E34FCCF55AADC1295 /* Pods-RPGPlayerClone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.debug.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.debug.xcconfig"; sourceTree = "<group>"; };
 		265AE0016FC945CC09E3E5A1 /* MKXPZWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKXPZWrapper.swift; sourceTree = "<group>"; };
 		42B583DA3D6C3FA122D73338 /* GameDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameDetector.swift; sourceTree = "<group>"; };
 		47044AD866BEAF58C43FA925 /* GameEngineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngineManager.swift; sourceTree = "<group>"; };
@@ -46,26 +45,27 @@
 		59715435F4E46932207E09AF /* VirtualGamepadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepadView.swift; sourceTree = "<group>"; };
 		620FD6273C085D0A4818FB5E /* GameType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameType.swift; sourceTree = "<group>"; };
 		85CF74F3F7A2EF3159CF0DA7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		8C6E219BA48E2F7B605208A0 /* Pods_RPGPlayerClone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RPGPlayerClone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		93D4E1423675E5FFD636379C /* RPGPlayerClone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RPGPlayerClone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9A77BB3A2AC7B43B425F052E /* FileImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImporter.swift; sourceTree = "<group>"; };
 		A5FBA9A62627368CE698D952 /* GameControllerMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameControllerMonitor.swift; sourceTree = "<group>"; };
 		AF9033A82AE9DF8F5E4B1125 /* GameModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModel.swift; sourceTree = "<group>"; };
 		B84028AD7898355DF9CB0DF9 /* EasyRPGWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EasyRPGWrapper.swift; sourceTree = "<group>"; };
 		BC01D2EB79C13ABC85B54C02 /* GameLibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLibraryViewModel.swift; sourceTree = "<group>"; };
+		C15108D8F5A4F3B92A73F985 /* Pods_RPGPlayerClone.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RPGPlayerClone.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D00E0C2550DB01AC75DCA8D6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D0388C9368806E89383E7E8E /* VirtualGamepadResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VirtualGamepadResourceLoader.swift; sourceTree = "<group>"; };
-		D212B22363A3E241D99BFF92 /* Pods-RPGPlayerClone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.release.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.release.xcconfig"; sourceTree = "<group>"; };
+		D58278D31D98F07B34042F16 /* Pods-RPGPlayerClone.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.release.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.release.xcconfig"; sourceTree = "<group>"; };
+		E39AAB51860F364ECA1751DA /* Pods-RPGPlayerClone.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RPGPlayerClone.debug.xcconfig"; path = "Target Support Files/Pods-RPGPlayerClone/Pods-RPGPlayerClone.debug.xcconfig"; sourceTree = "<group>"; };
 		F81ECE015ACDDFA60CDEE4E3 /* WebGameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebGameViewController.swift; sourceTree = "<group>"; };
 		F9C9CE811C31295235DD87D3 /* FileManager+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		FD4C6829BAA1CE6322C7A5B6 /* Frameworks */ = {
+		55B3BC3767DF8D29E895D99D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E759EF0F58EA9E96B8C81883 /* Pods_RPGPlayerClone.framework in Frameworks */,
+				240526446E947FC7ECA06D2D /* Pods_RPGPlayerClone.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,9 +118,17 @@
 			children = (
 				B685769B4F25B3F4D2E06CEA /* RPGPlayerClone */,
 				00E0DFA3EFF4D9A3495C0756 /* Products */,
-				EEB31D53E0644AE6F72A7525 /* Pods */,
-				F635AD8701D7A788C6FEE7AE /* Frameworks */,
+				D13186E24732D402E6FA0638 /* Pods */,
+				A94510527E258F889BDC97C7 /* Frameworks */,
 			);
+			sourceTree = "<group>";
+		};
+		A94510527E258F889BDC97C7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C15108D8F5A4F3B92A73F985 /* Pods_RPGPlayerClone.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		B685769B4F25B3F4D2E06CEA /* RPGPlayerClone */ = {
@@ -146,6 +154,16 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		D13186E24732D402E6FA0638 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E39AAB51860F364ECA1751DA /* Pods-RPGPlayerClone.debug.xcconfig */,
+				D58278D31D98F07B34042F16 /* Pods-RPGPlayerClone.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		D27B598A94E67889E380F9D1 /* App */ = {
 			isa = PBXGroup;
 			children = (
@@ -153,24 +171,6 @@
 				18351E19EA72B695B1356171 /* RPGPlayerCloneApp.swift */,
 			);
 			path = App;
-			sourceTree = "<group>";
-		};
-		EEB31D53E0644AE6F72A7525 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				1B877D3E34FCCF55AADC1295 /* Pods-RPGPlayerClone.debug.xcconfig */,
-				D212B22363A3E241D99BFF92 /* Pods-RPGPlayerClone.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		F635AD8701D7A788C6FEE7AE /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				8C6E219BA48E2F7B605208A0 /* Pods_RPGPlayerClone.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		F6A226F8138D2F6656DF4A7F /* ViewModels */ = {
@@ -200,10 +200,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 872AD10CCEBAF50ACEBF5261 /* Build configuration list for PBXNativeTarget "RPGPlayerClone" */;
 			buildPhases = (
-				B8EF6696D2625C96F97CCED0 /* [CP] Check Pods Manifest.lock */,
+				91E5697C4405D02A0E34BC3D /* [CP] Check Pods Manifest.lock */,
 				A19467AE13E5A6DFA7CBFC47 /* Sources */,
-				FD4C6829BAA1CE6322C7A5B6 /* Frameworks */,
-				E5E3E06359289D74AB7293D6 /* [CP] Copy Pods Resources */,
+				55B3BC3767DF8D29E895D99D /* Frameworks */,
+				C78FB427F63CBDD832370888 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -249,7 +249,7 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B8EF6696D2625C96F97CCED0 /* [CP] Check Pods Manifest.lock */ = {
+		91E5697C4405D02A0E34BC3D /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -271,7 +271,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E5E3E06359289D74AB7293D6 /* [CP] Copy Pods Resources */ = {
+		C78FB427F63CBDD832370888 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -324,7 +324,7 @@
 /* Begin XCBuildConfiguration section */
 		663CFF32A1405BEFFBA98B2F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = D212B22363A3E241D99BFF92 /* Pods-RPGPlayerClone.release.xcconfig */;
+			baseConfigurationReference = D58278D31D98F07B34042F16 /* Pods-RPGPlayerClone.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -496,7 +496,7 @@
 		};
 		F2A545D37B4CFA1B4A7E98B4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1B877D3E34FCCF55AADC1295 /* Pods-RPGPlayerClone.debug.xcconfig */;
+			baseConfigurationReference = E39AAB51860F364ECA1751DA /* Pods-RPGPlayerClone.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
